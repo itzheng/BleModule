@@ -1,11 +1,13 @@
 package org.itzheng.and.ble.utils;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 import org.itzheng.and.ble.bean.BluetoothDeviceInfo;
 import org.itzheng.and.ble.callback.BleScanCallback;
@@ -31,47 +33,69 @@ public class BleScanUtils {
         return new BleScanUtils();
     }
 
+    {
+        //初始化 监听，如果直接赋值的话，低版本找不到新版api会报错
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            scanCallback_v21 = getScanCallback_v21();
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            scanCallback_v18 = getScanCallback_v18();
+        }
+    }
+
     /**
      * 版本大于18的监听
      */
-    private BluetoothAdapter.LeScanCallback scanCallback_v18 = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            BluetoothDeviceInfo info = new BluetoothDeviceInfo();
-            info.device = device;
-            info.rssi = rssi;
-            info.scanRecord = scanRecord;
-            addList(deviceInfoList, info);
-            if (mScanCallback != null) {
-                mScanCallback.onLeScan(device, rssi, scanRecord);
-                mScanCallback.onLeScan(deviceInfoList);
+    @SuppressLint("NewApi")
+    private BluetoothAdapter.LeScanCallback scanCallback_v18;
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private BluetoothAdapter.LeScanCallback getScanCallback_v18() {
+        return new BluetoothAdapter.LeScanCallback() {
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                BluetoothDeviceInfo info = new BluetoothDeviceInfo();
+                info.device = device;
+                info.rssi = rssi;
+                info.scanRecord = scanRecord;
+                addList(deviceInfoList, info);
+                if (mScanCallback != null) {
+                    mScanCallback.onLeScan(device, rssi, scanRecord);
+                    mScanCallback.onLeScan(deviceInfoList);
+                }
             }
-        }
-    };
+        };
+    }
 
     /**
      * 版本大于21的监听
      */
-    private ScanCallback scanCallback_v21 = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            if (Build.VERSION.SDK_INT >= 21) {
-                //直接调用低版本的回调，兼容低版本
-                scanCallback_v18.onLeScan(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes());
+    private ScanCallback scanCallback_v21;
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public ScanCallback getScanCallback_v21() {
+        return new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult result) {
+                super.onScanResult(callbackType, result);
+                if (Build.VERSION.SDK_INT >= 21) {
+                    //直接调用低版本的回调，兼容低版本
+                    scanCallback_v18.onLeScan(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes());
+                }
             }
-        }
 
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            super.onBatchScanResults(results);
-        }
+            @Override
+            public void onBatchScanResults(List<ScanResult> results) {
+                super.onBatchScanResults(results);
+            }
 
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
-        }
-    };
+            @Override
+            public void onScanFailed(int errorCode) {
+                super.onScanFailed(errorCode);
+            }
+        };
+    }
 
     /**
      * 根据算法，将单个蓝牙信息添加到集合中
