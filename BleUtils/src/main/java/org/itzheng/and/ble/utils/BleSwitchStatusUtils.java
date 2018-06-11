@@ -46,7 +46,9 @@ public class BleSwitchStatusUtils {
             if (mOnBleSwitchStatusChangeListeners.isEmpty()) {
                 registerReceiver();
             }
-            mOnBleSwitchStatusChangeListeners.add(onBleSwitchStatusChangeListener);
+            //避免重复添加
+            if (!mOnBleSwitchStatusChangeListeners.contains(onBleSwitchStatusChangeListener))
+                mOnBleSwitchStatusChangeListeners.add(onBleSwitchStatusChangeListener);
         }
     }
 
