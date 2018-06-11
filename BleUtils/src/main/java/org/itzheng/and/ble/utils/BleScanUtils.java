@@ -11,6 +11,7 @@ import android.support.annotation.RequiresApi;
 
 import org.itzheng.and.ble.bean.BluetoothDeviceInfo;
 import org.itzheng.and.ble.callback.BleScanCallback;
+import org.itzheng.and.ble.filter.BleScanFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,19 @@ public class BleScanUtils {
         }
     }
 
+    private BleScanFilter mScanFilter;
+
+    /**
+     * 添加过滤器，如果不需要过滤器可以直接添加null
+     *
+     * @param filter
+     * @return
+     */
+    public BleScanUtils setFilter(BleScanFilter filter) {
+        mScanFilter = filter;
+        return this;
+    }
+
     /**
      * 版本大于18的监听
      */
@@ -54,6 +68,11 @@ public class BleScanUtils {
         return new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                if (mScanFilter != null && !mScanFilter.isAdd(device, rssi, scanRecord)) {
+                    //不添加，直接返回
+                    return;
+                }
+                //应该加个过滤器
                 BluetoothDeviceInfo info = new BluetoothDeviceInfo();
                 info.device = device;
                 info.rssi = rssi;
