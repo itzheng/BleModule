@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (true) {
+        if (false) {
             testBleSwitch();
             return;
         }
@@ -111,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setBleInfo() {
-
         tvBleAdd.setText(bleOptionUtils.getCurrentAddress());
         tvBleName.setText(bleOptionUtils.getCurrentName());
     }

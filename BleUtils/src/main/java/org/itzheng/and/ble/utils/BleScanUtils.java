@@ -193,6 +193,10 @@ public class BleScanUtils {
         if (BluetoothUtils.hasBluetoothAdapter()) {
             BluetoothAdapter bluetoothAdapter = BluetoothUtils.getBluetoothAdapter();
             if (Build.VERSION.SDK_INT >= 21) {
+                if (bluetoothAdapter.getBluetoothLeScanner() == null) {
+                    //如果扫描器为空，则不用停止，否则空指针
+                    return;
+                }
                 bluetoothAdapter.getBluetoothLeScanner().stopScan(scanCallback_v21);
             } else if (Build.VERSION.SDK_INT >= 18) {
                 bluetoothAdapter.stopLeScan(scanCallback_v18);

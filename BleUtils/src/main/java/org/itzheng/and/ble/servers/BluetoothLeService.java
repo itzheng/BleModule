@@ -17,10 +17,12 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import org.itzheng.and.ble.utils.BluetoothUtils;
@@ -34,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 蓝牙服务器，一个蓝牙服务同一时间，只能连接一个蓝牙
@@ -572,7 +573,76 @@ public class BluetoothLeService extends Service {
      */
     private void enableUuid() {
         if (mUUids == null) {
-            mUUids = new DefUuid();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                mUUids = getAutoBleUUID();
+            } else {
+                mUUids = new DefUuid();
+            }
         }
+    }
+
+    /**
+     * 自动寻找符合的UUID
+     *
+     * @return
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private IUUIDS getAutoBleUUID() {
+        String serviceUuid = "";
+        String characteristicUuid = "";
+        String descriptorUUid = "";
+        List<BluetoothGattService> bluetoothGattServices = getSupportedGattServices();
+        for (BluetoothGattService service : bluetoothGattServices) {
+//            Log.w(TAG, "item uuid: " + item.getUuid().toString());
+            serviceUuid = service.getUuid().toString();
+            List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+            if (characteristics == null || characteristics.isEmpty()) {
+                continue;
+            }
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                characteristicUuid = characteristic.getUuid().toString();
+                List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
+                if (characteristics == null || characteristics.isEmpty()) {
+                    continue;
+                }
+                for (BluetoothGattDescriptor descriptor : descriptors) {
+                    descriptorUUid = descriptor.getUuid().toString();
+                }
+            }
+            if (serviceUuid.isEmpty() || characteristicUuid.isEmpty() || descriptorUUid.isEmpty()) {
+                continue;
+            } else {
+                Log.w(TAG, "serviceUuid:" + serviceUuid);
+                Log.w(TAG, "characteristicUuid:" + characteristicUuid);
+                Log.w(TAG, "descriptorUUid:" + descriptorUUid);
+                break;
+            }
+        }
+        if (serviceUuid.isEmpty() || characteristicUuid.isEmpty() || descriptorUUid.isEmpty()) {
+            Log.w(TAG, "UUID is null ");
+            //没有符合的就使用默认设置，这个是针对某个蓝牙厂商，可能会出错，
+            //有条件还是设置UUid setUUids()
+            return null;
+        }
+        final String finalServiceUuid = serviceUuid;
+        final String finalCharacteristicUuid = characteristicUuid;
+        final String finalDescriptorUUid = descriptorUUid;
+        IUUIDS tUuid = new IUUIDS() {
+            @Override
+            public String getServiceUuid() {
+                return finalServiceUuid;
+            }
+
+            @Override
+            public String getCharacteristicUuid() {
+                return finalCharacteristicUuid;
+            }
+
+            @Override
+            public String getDescriptorUUid() {
+                return finalDescriptorUUid;
+            }
+        };
+        return tUuid;
     }
 }

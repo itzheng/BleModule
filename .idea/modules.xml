@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/BleModule.iml" filepath="$PROJECT_DIR$/.idea/BleModule.iml" />
-      <module fileurl="file://$PROJECT_DIR$/BleUtils/BleUtils.iml" filepath="$PROJECT_DIR$/BleUtils/BleUtils.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/BleModule.iml" filepath="$PROJECT_DIR$/.idea/BleModule.iml" group="BleModule" />
+      <module fileurl="file://$PROJECT_DIR$/BleUtils/BleUtils.iml" filepath="$PROJECT_DIR$/BleUtils/BleUtils.iml" group="BleModule/BleUtils" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="BleModule/app" />
     </modules>
   </component>
 </project>

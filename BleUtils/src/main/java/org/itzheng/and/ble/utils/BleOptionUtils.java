@@ -13,6 +13,7 @@ import android.util.Log;
 import org.itzheng.and.ble.callback.OnConnectionStateChangeListener;
 import org.itzheng.and.ble.callback.OnReceiveDataListener;
 import org.itzheng.and.ble.servers.BluetoothLeService;
+import org.itzheng.and.ble.uuid.IUUIDS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,12 @@ import java.util.List;
  * Created by itzheng on 2018-1-19.
  */
 public class BleOptionUtils {
+    /**
+     *
+     */
+    private BleOptionUtils() {
+    }
+
     private static final String TAG = "BleOptionUtils";
     /**
      * 服务未连接时，监听临时保存到这里，等服务器创建时，将监听像服务赋值，然后清空
@@ -50,6 +57,17 @@ public class BleOptionUtils {
         return bleOptionUtils;
     }
 
+    private IUUIDS mIuuids;
+
+    /**
+     * 设置蓝牙的uuid，如果有需要的话，则设置，不设置的话，系统自动获取符合的id
+     *
+     * @param uuids
+     */
+    private void setUUIDS(IUUIDS uuids) {
+        mIuuids = uuids;
+    }
+
     /**
      * 蓝牙服务
      */
@@ -63,6 +81,11 @@ public class BleOptionUtils {
             if (mBluetoothLeService == null) {
                 return;
             }
+            if (mIuuids != null) {
+                mBluetoothLeService.setUUids(mIuuids);
+            }
+
+
             addOnReceiveDataListenerToServer();
             addOnConnectionStateChangeListenerToServer();
 
