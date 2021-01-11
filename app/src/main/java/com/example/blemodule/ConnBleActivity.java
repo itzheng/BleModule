@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import org.itzheng.and.ble.callback.OnConnectionStateChangeListener;
 import org.itzheng.and.ble.callback.OnReceiveDataListener;
 import org.itzheng.and.ble.utils.BleOptionUtils;
 import org.itzheng.and.ble.utils.ByteUtils;
+import org.itzheng.and.ble.uuid.IUUIDS;
 
 /**
  * Title:蓝牙连接，提示连接成功，连接失败，发送消息，接收消息。返回则自动断开连接。<br>
@@ -59,6 +61,39 @@ public class ConnBleActivity extends AppCompatActivity {
     private void initUtils() {
         if (bleOptionUtils == null) {
             bleOptionUtils = BleOptionUtils.newInstance(this);
+            //接收数据的服务
+            bleOptionUtils.setUUIDS(new IUUIDS() {
+                @Override
+                public String getServiceUuid() {
+                    return "0000ffa0-0000-1000-8000-00805f9b34fb";
+                }
+
+                @Override
+                public String getCharacteristicUuid() {
+                    return "00001801-0000-1000-8000-00805f9b34fb";
+                }
+
+                @Override
+                public String getDescriptorUUid() {
+                    return "00002902-0000-1000-8000-00805f9b34fb";
+                }
+            });
+            bleOptionUtils.setPostUUIDs(new IUUIDS() {
+                @Override
+                public String getServiceUuid() {
+                    return "0000ffa0-0000-1000-8000-00805f9b34fb";
+                }
+
+                @Override
+                public String getCharacteristicUuid() {
+                    return "00001802-0000-1000-8000-00805f9b34fb";
+                }
+
+                @Override
+                public String getDescriptorUUid() {
+                    return "00002902-0000-1000-8000-00805f9b34fb";
+                }
+            });
             bleOptionUtils.addOnConnectionStateChangeListener(new OnConnectionStateChangeListener() {
                 @Override
                 public void onConnected() {
@@ -81,7 +116,8 @@ public class ConnBleActivity extends AppCompatActivity {
             bleOptionUtils.addOnReceiveDataListener(new OnReceiveDataListener() {
                 @Override
                 public void onReceiveData(byte[] value) {
-                    sbReceive.append(ByteUtils.toHexString(value));
+                    Log.w(TAG, "onReceiveData: " + ByteUtils.toHexString(value));
+                    sbReceive.append(ByteUtils.toHexString(value) + "\n");
                     tvText.post(new Runnable() {
                         @Override
                         public void run() {
@@ -153,6 +189,17 @@ public class ConnBleActivity extends AppCompatActivity {
         if (!isConn) {
             return;
         }
+//
+////        byte[] bytes = new byte[]{0x07, 0x01};
+//        byte[] bytes = new byte[20];
+////        bytes[19]=0x05;
+//        for (int i = 0; i < bytes.length; i++) {
+//            bytes[i] = 05;
+//        }
+////        byte[] bytes = new byte[]{0x05};
+//        bleOptionUtils.post(bytes);
+//        byte[] bytes1 = new byte[]{0x01};
+//        bleOptionUtils.post(bytes1);
         bleOptionUtils.post(etSend.getText().toString().getBytes());
     }
 

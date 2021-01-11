@@ -64,8 +64,24 @@ public class BleOptionUtils {
      *
      * @param uuids
      */
-    private void setUUIDS(IUUIDS uuids) {
+    public void setUUIDS(IUUIDS uuids) {
         mIuuids = uuids;
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.setUUids(uuids);
+        }
+    }
+
+    private IUUIDS mPostUUIDs;
+
+    /**
+     * 设置发送服务的UUID。
+     * 默认发送服务的和接收服务相同，如果不同则需要单独设置
+     */
+    public void setPostUUIDs(IUUIDS uuids) {
+        mPostUUIDs = uuids;
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.setPostUUIDs(uuids);
+        }
     }
 
     /**
@@ -84,8 +100,9 @@ public class BleOptionUtils {
             if (mIuuids != null) {
                 mBluetoothLeService.setUUids(mIuuids);
             }
-
-
+            if (mPostUUIDs != null) {
+                mBluetoothLeService.setPostUUIDs(mPostUUIDs);
+            }
             addOnReceiveDataListenerToServer();
             addOnConnectionStateChangeListenerToServer();
 

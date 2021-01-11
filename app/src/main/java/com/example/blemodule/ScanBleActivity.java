@@ -21,7 +21,9 @@ import android.widget.TextView;
 
 import org.itzheng.and.ble.bean.BluetoothDeviceInfo;
 import org.itzheng.and.ble.callback.BleScanCallback;
+import org.itzheng.and.ble.filter.BleScanFilter;
 import org.itzheng.and.ble.utils.BleScanUtils;
+import org.itzheng.and.ble.utils.ByteUtils;
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -60,6 +62,14 @@ public class ScanBleActivity extends AppCompatActivity {
     private void initUtils() {
         if (bleScanUtils == null) {
             bleScanUtils = BleScanUtils.newInstance();
+            bleScanUtils.setFilter(new BleScanFilter() {
+                @Override
+                public boolean isAdd(BluetoothDevice device, int rssi, byte[] scanRecord) {
+
+                    Log.w(TAG, "isAdd: " + device.getName() + " " + ByteUtils.toHexString(scanRecord));
+                    return true;
+                }
+            });
             bleScanUtils.setScanCallback(new BleScanCallback() {
                 @Override
                 public void onLeScan(List<BluetoothDeviceInfo> deviceInfoList) {

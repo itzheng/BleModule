@@ -176,18 +176,23 @@ public class BluetoothLeService extends Service {
     @SuppressLint("NewApi")
     public int post(byte[] writeBytes) {
         Log.i(TAG, "post: " + ByteUtils.toHexString(writeBytes));
-        enableUuid();
+        IUUIDS postUUid = mPostUUIDs;
+        if (postUUid == null) {
+            //如果单独设置发送服务id则使用单独设置的，否则使用默认
+            enableUuid();
+            postUUid = mUUids;
+        }
         int error = -1;
         if (mBluetoothGatt == null) {
             Log.w(TAG, "mBluetoothGatt is null");
             return error;
         }
-        BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(mUUids.getServiceUuid()));
+        BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(postUUid.getServiceUuid()));
         if (gattService == null) {
             Log.w(TAG, "Service is null");
             return error;
         }
-        BluetoothGattCharacteristic gg = gattService.getCharacteristic(UUID.fromString(mUUids.getCharacteristicUuid()));
+        BluetoothGattCharacteristic gg = gattService.getCharacteristic(UUID.fromString(postUUid.getCharacteristicUuid()));
         if (gg == null) {
             Log.w(TAG, "gg is null");
             return error;
@@ -222,7 +227,7 @@ public class BluetoothLeService extends Service {
             this.mBluetoothGatt.writeCharacteristic(gg);
             ic += data_len_0;
         }
-
+        Log.w(TAG, "post success!!");
         return ic;
     }
 
@@ -337,6 +342,16 @@ public class BluetoothLeService extends Service {
      */
     public void setUUids(IUUIDS uuids) {
         mUUids = uuids;
+    }
+
+    private IUUIDS mPostUUIDs;
+
+    /**
+     * 设置发送服务的UUID。
+     * 默认发送服务的和接收服务相同，如果不同则需要单独设置
+     */
+    public void setPostUUIDs(IUUIDS uuids) {
+        mPostUUIDs = uuids;
     }
 
     @SuppressLint("NewApi")
@@ -595,18 +610,21 @@ public class BluetoothLeService extends Service {
         for (BluetoothGattService service : bluetoothGattServices) {
 //            Log.w(TAG, "item uuid: " + item.getUuid().toString());
             serviceUuid = service.getUuid().toString();
+            Log.w(TAG, "getAutoBleUUID: serviceUuid " + serviceUuid);
             List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
             if (characteristics == null || characteristics.isEmpty()) {
                 continue;
             }
             for (BluetoothGattCharacteristic characteristic : characteristics) {
                 characteristicUuid = characteristic.getUuid().toString();
+                Log.w(TAG, "getAutoBleUUID: characteristicUuid " + serviceUuid);
                 List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
                 if (characteristics == null || characteristics.isEmpty()) {
                     continue;
                 }
                 for (BluetoothGattDescriptor descriptor : descriptors) {
                     descriptorUUid = descriptor.getUuid().toString();
+                    Log.w(TAG, "getAutoBleUUID: descriptorUUid " + serviceUuid);
                 }
             }
             if (serviceUuid.isEmpty() || characteristicUuid.isEmpty() || descriptorUUid.isEmpty()) {
@@ -615,7 +633,7 @@ public class BluetoothLeService extends Service {
                 Log.w(TAG, "serviceUuid:" + serviceUuid);
                 Log.w(TAG, "characteristicUuid:" + characteristicUuid);
                 Log.w(TAG, "descriptorUUid:" + descriptorUUid);
-                break;
+//                break;
             }
         }
         if (serviceUuid.isEmpty() || characteristicUuid.isEmpty() || descriptorUUid.isEmpty()) {
